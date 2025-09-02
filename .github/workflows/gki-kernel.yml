@@ -320,17 +320,25 @@ jobs:
             cd ./Wild_KSU
             if [ "$BRANCH" == "-s next" ]; then
               echo "当前为Dev分支的KernelSU-Next"
-              cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+            # cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
               patch -p1 --forward --fuzz=3 < 10_enable_susfs_for_ksu.patch || true
               echo "应用临时修复补丁"
-              cp ../../zzh_patch/next-patch/* ./
-              patch -p1 --fuzz=3 --forward < apk_sign.patch
-              patch -p1 --fuzz=3 --forward < core_hook.patch
-              patch -p1 --fuzz=3 --forward < ksud.patch
-              patch -p1 --fuzz=3 --forward < selinux.patch
-              patch -p1 --fuzz=3 --forward < rules.c.patch
-              patch -p1 --fuzz=3 --forward < sucompat.c.patch
-              patch -p1 --fuzz=3 --forward < kernel_compat.c.patch
+              cd ./Wild_KSU
+              cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+              patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
+              
+              cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+              patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
+              
+              cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
+              patch -p1 --forward < fix_rules.c.patch
+
+              cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
+              patch -p1 --forward < fix_sucompat.c.patch
+
+              cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+              patch -p1 --forward < fix_kernel_compat.c.patch
+              ;;
             fi
             
           elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
