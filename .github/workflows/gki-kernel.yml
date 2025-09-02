@@ -338,7 +338,6 @@ jobs:
 
               cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
               patch -p1 --forward < fix_kernel_compat.c.patch
-              ;;
             fi
             
           elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
