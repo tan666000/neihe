@@ -60,6 +60,14 @@ on:
       build_time:
         required: false
         type: string
+      Latest:
+        required: true
+        type: boolean
+        default: true
+      Specified:
+        required: true
+        type: boolean
+        default: true
 
 jobs:
   build-kernel-kernelsu-susfs:
