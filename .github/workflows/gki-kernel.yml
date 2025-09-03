@@ -619,31 +619,22 @@ jobs:
           echo "更改为配置目录: $CONFIG..."
           cd "$CONFIG"
 
-          # 目标显示版本（239→209）
-          TARGET_SUBLEVEL="226"
+          if [ ! -z ${{ inputs.version }} ]; then
+            echo "版本号不为空"
+            sed -i '$s|echo "\$res"|echo "${{ inputs.version }}"|' ./common/scripts/setlocalversion
+            sed -i '/^CONFIG_LOCALVERSION=/ s/="\([^"]*\)"/="${{ inputs.version }}"/' ./common/arch/arm64/configs/gki_defconfig
+          elif [ ! -f "build/build.sh" ]; then
+            echo "版本号为空,如果使用bazel编译,且如果使用bazel则加上kmi"
+            cd ./common
 
-          # 使用用户自定义后缀（直接传入，不做替换）
-          if [ ! -z "${{ inputs.version }}" ]; then
-            echo "使用用户自定义后缀: ${{ inputs.version }}"
-            # 写入自定义后缀到版本脚本和配置文件
-            sed -i "$ s|echo \"\$res\"|echo \"${{ inputs.version }}\"|" ./common/scripts/setlocalversion
-            sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"${{ inputs.version }}\"/" ./common/arch/arm64/configs/gki_defconfig
-          else
-            echo "未指定自定义后缀，使用默认空后缀"
-            # 若未传后缀，清空版本后缀（仅保留主版本）
-            sed -i "$ s|echo \"\$res\"|echo \"\"|" ./common/scripts/setlocalversion
-            sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"\"/" ./common/arch/arm64/configs/gki_defconfig
-          fi
-
-          # 关键：修改5.10内核Makefile中的主版本号（239→209）
-          MAKEFILE_PATH="./common/Makefile"
-          if [ -f "$MAKEFILE_PATH" ]; then
-            # 强制替换SUBLEVEL（无论原数值，直接设为209）
-            sed -i "s/^SUBLEVEL = .*/SUBLEVEL = ${TARGET_SUBLEVEL}/" "$MAKEFILE_PATH"
-            echo "5.10内核主版本修订号已改为${TARGET_SUBLEVEL}"
-          else
-            echo "错误：未找到5.10内核Makefile"
-            exit 1
+            # 6.1
+            kmi="-android14-11-g$(git rev-parse --verify HEAD | cut -c1-13)"
+            echo "KMI=$kmi"
+            sed -i "\$s|echo \"\$res\"|echo \"$kmi\"|" ./scripts/setlocalversion
+            # 6.6
+            kmi="-g$(git rev-parse --verify HEAD | cut -c1-13)-4k"
+            sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"${kmi}\"/" ./arch/arm64/configs/gki_defconfig
+            echo "KMI=$kmi"
           fi
           
           
