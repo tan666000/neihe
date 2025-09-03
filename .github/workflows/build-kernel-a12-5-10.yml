@@ -59,7 +59,16 @@ on:
         required: false
         type: boolean
         default: false
-      
+      Latest:
+        description: '编译最新版本'
+        required: true
+        type: boolean
+        default: true
+      Specified:
+        description: '指定版本'
+        required: true
+        type: boolean
+        default: true
 
 jobs:
   build-kernel-a12-5-10:
@@ -75,7 +84,8 @@ jobs:
       use_kpm: ${{ inputs.use_kpm }}
       onlyAk3: ${{ inputs.onlyAk3 }}
       build_time: ${{ inputs.build_time }}
-
+      Latest: ${{ inputs.Latest }}
+      Specified: ${{ inputs.Specified }}
   get-ksu-manager:
     if: ${{ inputs.get_manager }}
     uses: ./.github/workflows/get-manager.yml
