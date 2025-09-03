@@ -55,6 +55,16 @@ on:
         required: true
         type: boolean
         default: false
+      Latest:
+        description: '编译最新版本'
+        required: true
+        type: boolean
+        default: true
+      Specified:
+        description: '指定版本'
+        required: true
+        type: boolean
+        default: true
 jobs:
   get_manager:
     uses: ./.github/workflows/get-manager.yml
