@@ -189,9 +189,10 @@ jobs:
       
       - name: 初始化和同步内核源代码
         run: |
-          echo "Creating folder for configuration: ${{ inputs.os_patch_level }}..."
-          mkdir -p "${{ inputs.os_patch_level }}"
-          cd "${{ inputs.os_patch_level }}"
+          BUILD_FOLDER="${{ inputs.android_version }}-${{ inputs.kernel_version }}-${{ inputs.sub_level }}"
+          echo "Creating folder for configuration: ${BUILD_FOLDER}..."
+          mkdir -p "${BUILD_FOLDER}"
+          cd "${BUILD_FOLDER}"
           git clone https://github.com/LineageOS/android_prebuilts_gcc_linux-x86_aarch64_aarch64-linux-gnu-6.4.1.git gcc
           ls gcc/bin
           # Initialize and sync kernel source
