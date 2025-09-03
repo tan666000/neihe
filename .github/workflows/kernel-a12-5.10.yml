@@ -45,7 +45,16 @@ on:
         description: '设置内核构建时间(格式见仓库说明)'
         required: false
         type: string
-      
+      Latest:
+        description: '编译最新版本'
+        required: true
+        type: boolean
+        default: true
+      Specified:
+        description: '指定版本'
+        required: true
+        type: boolean
+        default: true
   
 jobs:
   build-kernel-a12-5-10-kernelsu-susfs:
