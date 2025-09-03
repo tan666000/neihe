@@ -98,3 +98,5 @@ jobs:
       fast: ${{ inputs.fast || false }}
       onlyAk3: ${{ inputs.onlyAk3 || false }}
       build_time: ${{ inputs.build_time || '' }}
+      Latest: ${{ inputs.Latest }}
+      Specified: ${{ inputs.Specified }}
