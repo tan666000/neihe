@@ -363,7 +363,7 @@ jobs:
               # This line and all following lines are indented correctly inside the 'if' block
               cd ./common
               patch -p1 --forward < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch
-
+              cd ..
               echo "Applying SUSFS patches for WKSU..."
               cd ./Wild_KSU
               cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
