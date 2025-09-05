@@ -341,7 +341,7 @@ jobs:
           if [ "${{ inputs.kernelsu_variant }}" == "Official" ]; then
             echo "Applying SUSFS patches for Official KernelSU..."
             cd ./KernelSU
-            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./ 
+            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 --forward --fuzz=3 < 10_enable_susfs_for_ksu.patch || true
             # 当KSU为标准版,无须额外补丁
             if [ "$BRANCH" != "-" ]; then
@@ -354,32 +354,35 @@ jobs:
           elif [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
             # 临时恢复KSU-NEXT的dev编译
             echo "Applying SUSFS patches for KernelSU-Next..."
-            
+
             if [ "$BRANCH" == "-s next" ]; then
               echo "当前为Dev分支的KernelSU-Next"
-          #cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./common/
-          
-          patch -p1 --forward < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch
-         
-          echo "Applying SUSFS patches for WKSU..."
-          cd ./Wild_KSU
-          cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-          patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
-          
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
-          patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
-          
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
-          patch -p1 --forward < fix_rules.c.patch
+              # The next line is commented out but correctly indented
+              # cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./common/
 
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
-          patch -p1 --forward < fix_sucompat.c.patch
+              # This line and all following lines are indented correctly inside the 'if' block
+              cd ./common
+              patch -p1 --forward < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch
 
-          cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
-          patch -p1 --forward < fix_kernel_compat.c.patch
+              echo "Applying SUSFS patches for WKSU..."
+              cd ./Wild_KSU
+              cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+              patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
+
+              cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
+              patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
+
+              cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
+              patch -p1 --forward < fix_rules.c.patch
+
+              cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
+              patch -p1 --forward < fix_sucompat.c.patch
+
+              cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
+              patch -p1 --forward < fix_kernel_compat.c.patch
 
             fi
-            
+
           elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
             echo "Applying SUSFS patches for MKSU..."
             cd ./KernelSU
@@ -402,18 +405,7 @@ jobs:
             echo "Invalid KernelSU variant selected!"
             exit 1
           fi
-
-          cd ../common
-          patch -p1 --fuzz=3 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
-
-          FORMATTED_BRANCH="${{ inputs.android_version }}-${{ inputs.kernel_version }}"
-          if grep -q deprecated <<< "$REMOTE_BRANCH" && \
-             { [ "$FORMATTED_BRANCH" == "android12-5.10" ] && \
-               [ ${{ inputs.sub_level }} -lt 136 ]; }; then
-            cp ../../zzh_patch/5.10-patch/fdinfo.c.patch ./
-            patch -p1 < fdinfo.c.patch
-          fi
-  
+            
       - name: 应用新的HOOKS补丁
         run: |
           echo "更改为配置目录: $CONFIG..."
