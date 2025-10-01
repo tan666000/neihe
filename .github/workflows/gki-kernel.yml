@@ -418,12 +418,12 @@ jobs:
 
           if [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
             echo "Applying hooks for KernelSU-Next..."
-            cp ../../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
+            cp ../../hooks/sukisu_tracepoint_hooks_v1.1.patch ./
             patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
           elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
             echo "Applying hooks for SukiSU..."
-            cp ../../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
-            patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
+            cp ../../hooks/sukisu_tracepoint_hooks_v1.1.patch ./
+            patch -p1 -F 3 < sukisu_tracepoint_hooks_v1.1.patch
           fi
       
       - name: 升级LZ4至1.10.0
