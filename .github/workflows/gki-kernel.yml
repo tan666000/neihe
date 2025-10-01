@@ -1,3 +1,4 @@
+
 name: GKI Kernel Build
 permissions:
   contents: write  # Allow writing to repository contents (for pushing tags)
@@ -178,7 +179,7 @@ jobs:
           # Clone repositories using the branch names
           git clone https://github.com/WildPlusKernel/AnyKernel3.git -b "$ANYKERNEL_BRANCH"
           git clone https://gitlab.com/simonpunk/susfs4ksu.git -b "$SUSFS_BRANCH"
-          git clone https://github.com/WildPlusKernel/kernel_patches.git
+          git clone https://github.com/tan666000/kernel_patches.git
           # Sukisu的补丁仓库
           git clone https://github.com/ShirkNeko/SukiSU_patch.git
           # next修复补丁
@@ -317,7 +318,7 @@ jobs:
             curl -LSs "https://raw.githubusercontent.com/tiann/KernelSU/main/kernel/setup.sh" | bash $BRANCH
           elif [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
             echo "Adding KernelSU Next..."
-            curl -LSs "https://raw.githubusercontent.com/WildKernels/Wild_KSU/wild/kernel/setup.sh" | bash -s wild
+            curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash $BRANCH
           elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
             echo "Adding KernelSU MKSU..."
             curl -LSs "https://raw.githubusercontent.com/5ec1cff/KernelSU/main/kernel/setup.sh" | bash $BRANCH
@@ -341,76 +342,67 @@ jobs:
           if [ "${{ inputs.kernelsu_variant }}" == "Official" ]; then
             echo "Applying SUSFS patches for Official KernelSU..."
             cd ./KernelSU
-            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-            patch -p1 --forward --fuzz=3 < 10_enable_susfs_for_ksu.patch || true
-            # 当KSU为标准版,无须额外补丁
-            if [ "$BRANCH" != "-" ]; then
-              cp ../../zzh_patch/core_hook.c.patch ./
-              cp ../../zzh_patch/rules.c.patch ./
-              patch -p1 --fuzz=3 < core_hook.c.patch
-              patch -p1 --fuzz=3 < rules.c.patch
-            fi
+            cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./ 
+            patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
+
+            echo "Applying Official specific patches..."
+            cp ../../zzh_patch/mksu_core_hook.c.patch ./
+            patch -p1 --fuzz=3 < mksu_core_hook.c.patch
 
           elif [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
             # 临时恢复KSU-NEXT的dev编译
             echo "Applying SUSFS patches for KernelSU-Next..."
-
+            cd ./KernelSU-Next
             if [ "$BRANCH" == "-s next" ]; then
               echo "当前为Dev分支的KernelSU-Next"
-              # The next line is commented out but correctly indented
-              # cp ../susfs4ksu/kernel_patches/50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch ./common/
-
-              # This line and all following lines are indented correctly inside the 'if' block
-              cd ./common
-              patch -p1 --forward < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch
-              cd ..
-              echo "Applying SUSFS patches for WKSU..."
-              cd ./Wild_KSU
               cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-              patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
-
-              # Apply compatibility fixes
-              cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_core_hook.c.patch ./
-              patch -p1 --forward --fuzz=3 < fix_core_hook.c.patch
-          
-          ## Skip fix_rules.c.patch for Android 14 with kernel 6.1
-          #if [ "${{ inputs.android_version }}" != "android14" ] && [ "${{ inputs.kernel_version }}" != "6.1" ]; then
-          #  cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_rules.c.patch ./
-          #  patch -p1 --forward < fix_rules.c.patch
-          #fi
-
-             cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_sucompat.c.patch ./
-             patch -p1 --forward < fix_sucompat.c.patch
-
-             cp ../../kernel_patches/wild/susfs_fix_patches/v1.5.9/fix_kernel_compat.c.patch ./
-             patch -p1 --forward < fix_kernel_compat.c.patch
-          fi
-
+              patch -p1 < 10_enable_susfs_for_ksu.patch || true
+              echo "应用临时修复补丁"
+              cp ../../zzh_patch/next-patch/* ./
+              patch -p1 < fix_apk_sign.c.patch
+              patch -p1 < fix_core_hook.c.patch
+              patch -p1 < fix_sucompat.c.patch
+              patch -p1 < fix_kernel_compat.c.patch
+            fi
+            
           elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
             echo "Applying SUSFS patches for MKSU..."
             cd ./KernelSU
-            # 回退 devpts hooks 提交
-            git revert --no-edit 99b82405e8473b715e8edb92e2226dc3c376bde4
 
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-            patch -p1 --forward --fuzz=3 < 10_enable_susfs_for_ksu.patch || true
+            patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
 
-            cp ../../zzh_patch/core_hook.c.patch ./
-            cp ../../zzh_patch/rules.c.patch ./
-            patch -p1 --fuzz=3 < core_hook.c.patch
-            patch -p1 --fuzz=3 < rules.c.patch
+            echo "Applying MKSU specific patches..."
+            cp ../../zzh_patch/mksu_core_hook.c.patch ./
+            patch -p1 --fuzz=3 < mksu_core_hook.c.patch
 
           elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
             echo "Applying SUSFS patches for SukiSU..."
             cd ./KernelSU
             echo "Applying SukiSU specific SUSFS patch..."
-            cd ../common
-            patch -p1 --fuzz=3 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
           else
             echo "Invalid KernelSU variant selected!"
             exit 1
           fi
-            
+
+          cd ../common
+
+
+          patch -p1 --fuzz=3 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
+
+          if [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
+            cp ../../zzh_patch/rm_devpt.patch ./
+            patch -p1 < rm_devpt.patch
+          fi
+
+          FORMATTED_BRANCH="${{ inputs.android_version }}-${{ inputs.kernel_version }}"
+          if grep -q deprecated <<< "$REMOTE_BRANCH" && \
+             { [ "$FORMATTED_BRANCH" == "android12-5.10" ] && \
+               [ ${{ inputs.sub_level }} -lt 136 ]; }; then
+            cp ../../zzh_patch/5.10-patch/fdinfo.c.patch ./
+            patch -p1 < fdinfo.c.patch
+          fi
+  
       - name: 应用新的HOOKS补丁
         run: |
           echo "更改为配置目录: $CONFIG..."
@@ -418,12 +410,12 @@ jobs:
 
           if [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
             echo "Applying hooks for KernelSU-Next..."
-            cp ../../hooks/sukisu_tracepoint_hooks_v1.1.patch ./
+            cp ../../kernel_patches/next/scope_min_manual_hooks_v1.4.patch ./
             patch -p1 -F 3 < scope_min_manual_hooks_v1.4.patch
           elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
             echo "Applying hooks for SukiSU..."
-            cp ../../hooks/sukisu_tracepoint_hooks_v1.1.patch ./
-            patch -p1 -F 3 < sukisu_tracepoint_hooks_v1.1.patch
+            cp ../../kernel_patches/next/scope_min_manual_hooks_v1.5.patch ./
+            patch -p1 -F 3 < scope_min_manual_hooks_v1.5.patch
           fi
       
       - name: 升级LZ4至1.10.0
