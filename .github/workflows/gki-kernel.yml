@@ -414,11 +414,7 @@ jobs:
             patch -p1 -F 3 < scope_min_manual_hooks_v1.5.patch
           elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
             echo "Applying hooks for SukiSU..."
-            echo "修改 syscall_check.h 文件..."
-            sed -i '5s/#define TRACE_INCLUDE_PATH trace\/hooks/#ifndef TRACE_INCLUDE_PATH\n#define TRACE_INCLUDE_PATH trace\/hooks\n#endif/' include/trace/hooks/syscall_check.h
             
-            echo "验证修改："
-            grep -A2 -B2 "TRACE_INCLUDE_PATH" include/trace/hooks/syscall_check.h
             cp ../../kernel_patches/next/scope_min_manual_hooks_v1.5.patch ./
             patch -p1 -F 3 < scope_min_manual_hooks_v1.5.patch
           fi
