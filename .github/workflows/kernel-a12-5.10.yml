@@ -28,19 +28,19 @@ on:
         default: ""
       use_zram:
         description: '是否开启增加更多ZRAM算法?'
-        required: true
-        type: boolean
-        default: true
-      use_kpm:
-        description: '是否开启KPM功能?'
-        required: true
-        type: boolean
-        default: true
-      onlyAk3:
-        description: '仅上传AK3压缩包?(无boot,下载更快)'
         required: false
         type: boolean
         default: false
+      use_kpm:
+        description: '是否开启KPM功能?'
+        required: false
+        type: boolean
+        default: false
+      onlyAk3:
+        description: '仅上传AK3压缩包?(无boot,下载更快)'
+        required: true
+        type: boolean
+        default: true
       build_time:
         description: '设置内核构建时间(格式见仓库说明)'
         required: false
@@ -52,9 +52,9 @@ on:
         default: true
       Specified:
         description: '指定版本'
-        required: true
+        required: false
         type: boolean
-        default: true
+        default: false
   
 jobs:
   build-kernel-a12-5-10-kernelsu-susfs:
