@@ -669,7 +669,7 @@ jobs:
           fi
 
       - name: 配置内核名称(常规构建)
-        if: ${{ !inputs.fast }}
+      #  if: ${{ !inputs.fast }}
         run: |
           echo "更改为配置目录: $CONFIG..."
           cd "$CONFIG"
@@ -678,17 +678,17 @@ jobs:
           TARGET_SUBLEVEL="226"
 
           # 使用用户自定义后缀（直接传入，不做替换）
-          if [ ! -z "${{ inputs.version }}" ]; then
-            echo "使用用户自定义后缀: ${{ inputs.version }}"
+        #  if [ ! -z "${{ inputs.version }}" ]; then
+          #  echo "使用用户自定义后缀: ${{ inputs.version }}"
             # 写入自定义后缀到版本脚本和配置文件
-            sed -i "$ s|echo \"\$res\"|echo \"${{ inputs.version }}\"|" ./common/scripts/setlocalversion
-            sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"${{ inputs.version }}\"/" ./common/arch/arm64/configs/gki_defconfig
-          else
-            echo "未指定自定义后缀，使用默认空后缀"
-            # 若未传后缀，清空版本后缀（仅保留主版本）
-            sed -i "$ s|echo \"\$res\"|echo \"\"|" ./common/scripts/setlocalversion
-            sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"\"/" ./common/arch/arm64/configs/gki_defconfig
-          fi
+          sed -i "$ s|echo \"\$res\"|echo \"-android12-9-00047-g4968e29b7f92-ab12786767"|" ./common/scripts/setlocalversion
+          sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"-android12-9-00047-g4968e29b7f92-ab12786767"/" ./common/arch/arm64/configs/gki_defconfig
+        #  else
+            #echo "未指定自定义后缀，使用默认空后缀"
+           # # 若未传后缀，清空版本后缀（仅保留主版本）
+            #sed -i "$ s|echo \"\$res\"|echo \"\"|" ./common/scripts/setlocalversion
+            #sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"\"/" ./common/arch/arm64/configs/gki_defconfig
+         # fi
 
           # 关键：修改5.10内核Makefile中的主版本号（239→209）
           MAKEFILE_PATH="./common/Makefile"
