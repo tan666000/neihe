@@ -648,7 +648,7 @@ jobs:
             CURRENT_TIME="${{ inputs.build_time }}"
           else
             echo "构建时间为空，使用当前时间"
-            CURRENT_TIME=$(date -u +"%a %b %d %H:%M:%S UTC %Y")
+            CURRENT_TIME="Wed Dec 11 21:50:47 UTC 2024"
           fi
           
           echo "CURRENT_TIME=$CURRENT_TIME"
@@ -677,20 +677,8 @@ jobs:
           # 目标显示版本（239→209）
           TARGET_SUBLEVEL="226"
 
-          # 使用用户自定义后缀（直接传入，不做替换）
-        #  if [ ! -z "${{ inputs.version }}" ]; then
-          #  echo "使用用户自定义后缀: ${{ inputs.version }}"
-            # 写入自定义后缀到版本脚本和配置文件
-          sed -i "$ s|echo \"\$res\"|echo \"-android12-9-00047-g4968e29b7f92-ab12786767"|" ./common/scripts/setlocalversion
-          sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"-android12-9-00047-g4968e29b7f92-ab12786767"/" ./common/arch/arm64/configs/gki_defconfig
-        #  else
-            #echo "未指定自定义后缀，使用默认空后缀"
-           # # 若未传后缀，清空版本后缀（仅保留主版本）
-            #sed -i "$ s|echo \"\$res\"|echo \"\"|" ./common/scripts/setlocalversion
-            #sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"\"/" ./common/arch/arm64/configs/gki_defconfig
-         # fi
-
-          # 关键：修改5.10内核Makefile中的主版本号（239→209）
+          sed -i "$ s|echo \"\$res\"|echo \"-android12-9-00047-g4968e29b7f92-ab12786767\"|" ./common/scripts/setlocalversion
+          sed -i "/^CONFIG_LOCALVERSION=/ s/=\"[^\"]*\"/=\"-android12-9-00047-g4968e29b7f92-ab12786767\"/" ./common/arch/arm64/configs/gki_defconfig
           MAKEFILE_PATH="./common/Makefile"
           if [ -f "$MAKEFILE_PATH" ]; then
             # 强制替换SUBLEVEL（无论原数值，直接设为209）
@@ -700,6 +688,9 @@ jobs:
             echo "错误：未找到5.10内核Makefile"
             exit 1
           fi
+        #  else
+          # 关键：修改5.10内核Makefile中的主版本号（239→209）
+          
 
       # - name: 配置内核名称(快速构建)
       #   if: ${{ inputs.fast }}
