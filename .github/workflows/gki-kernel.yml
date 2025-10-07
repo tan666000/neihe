@@ -307,7 +307,14 @@ jobs:
               exit 1
               ;;
           esac
-
+      - name: SUKISU管理器信息
+        if: ${{ inputs.kernelsu_variant == 'SukiSU' }}
+        run: |
+         cd "$CONFIG"
+         cd ./KernelSU
+    
+          sed -i 's|\$(shell cd \$(srctree)/\$(src); \$(GIT_BIN) rev-parse --short=8 HEAD)|666|g' ./kernel/Makefile 
+          sed -n '50,60p' ./kernel/Makefile
       - name: 添加 KernelSU
         run: |
           echo "更改为配置目录: $CONFIG..."
