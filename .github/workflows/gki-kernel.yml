@@ -273,18 +273,29 @@ jobs:
       
       - name: 确定 KernelSU 的分支
         run: |
+
           branch_input="${{ inputs.kernelsu_branch }}"
           variant_input="${{ inputs.kernelsu_variant }}"
-          
+
           case "$branch_input" in
             "Stable(标准)")
-              echo "BRANCH=-s susfs-main" >> $GITHUB_ENV
+              case "$variant_input" in
+                "Next")
+                  echo "BRANCH=-s next" >> $GITHUB_ENV
+                  ;;
+                "SukiSU")
+                  echo "BRANCH=-s susfs-main" >> $GITHUB_ENV
+                  ;;
+                *)
+                  echo "BRANCH=-" >> $GITHUB_ENV
+                  ;;
+              esac
               ;;
             "Dev(开发)")
               case "$variant_input" in
                 "Official" | "MKSU") echo "BRANCH=-s main" >> $GITHUB_ENV ;;
-                "Next")              echo "BRANCH=-s next-susfs-dev" >> $GITHUB_ENV ;;
-                "SukiSU")           echo "BRANCH=-s susfs-test" >> $GITHUB_ENV ;;
+                "Next")              echo "BRANCH=-s next" >> $GITHUB_ENV ;;
+                "SukiSU")           echo "BRANCH=-s susfs-main" >> $GITHUB_ENV ;;
                 *) 
                   echo "错误：未定义开发分支的变体 '$variant_input'" >&2
                   exit 1
@@ -404,8 +415,8 @@ jobs:
           elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
             echo "Applying hooks for SukiSU..."
             
-            cp ../../kernel_patches/next/tp.patch ./
-            patch -p1 -F 3 < tp.patch
+            cp ../../kernel_patches/next/scope_min_manual_hooks_v1.5.patch ./
+            patch -p1 -F 3 < scope_min_manual_hooks_v1.5.patch
           fi
       
       - name: 升级LZ4至1.10.0
@@ -550,7 +561,7 @@ jobs:
             echo "CONFIG_CRYPTO_842=y" >> "$CONFIG_FILE"
             echo "CONFIG_CRYPTO_LZ4K_OPLUS=y" >> "$CONFIG_FILE"
           fi
-
+          
       - name: 添加SUSFS配置设置
         run: |
           echo "更改为配置目录: $CONFIG..."
@@ -564,9 +575,9 @@ jobs:
             echo "CONFIG_KSU_KPROBES_HOOK=n" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
           elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
-            echo "CONFIG_KPM=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_KPM=n" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
-            echo "CONFIG_KSU_TRACEPOINT_HOOK=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "CONFIG_KSU_MANUAL_HOOK=y" >> ./common/arch/arm64/configs/gki_defconfig
           fi
           
           # Add SUSFS configuration settings
@@ -585,14 +596,44 @@ jobs:
           echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y" >> ./common/arch/arm64/configs/gki_defconfig
+
+          # Add additional tmpfs config setting
+          echo "CONFIG_TMPFS_XATTR=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_TMPFS_POSIX_ACL=y" >> ./common/arch/arm64/configs/gki_defconfig
+
+          # === ipset support ===
+          echo "CONFIG_IP_SET=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_MAX=256" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_BITMAP_IP=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_BITMAP_IPMAC=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_BITMAP_PORT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_HASH_IP=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_HASH_IPPORT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_HASH_IPPORTIP=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_HASH_IPPORTNET=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_HASH_NET=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_HASH_NETNET=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_HASH_NETPORT=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP_SET_HASH_NETIFACE=y" >> ./common/arch/arm64/configs/gki_defconfig
+
+          # Build Optimization Configuration
+          echo "CONFIG_LTO_CLANG_THIN=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_LTO_CLANG=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE_O3=n" >> ./common/arch/arm64/configs/gki_defconfig
           
+          # Add additional config setting
+          echo "CONFIG_IP_NF_TARGET_TTL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP6_NF_TARGET_HL=y" >> ./common/arch/arm64/configs/gki_defconfig
+          echo "CONFIG_IP6_NF_MATCH_HL=y" >> ./common/arch/arm64/configs/gki_defconfig
+
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
 
+          
           # 用于debug config
           tail -n 40 ./common/arch/arm64/configs/gki_defconfig
 
-      
       - name: 配置内核构时间/删除dirty字符
         run: |
           echo "更改为配置目录: $CONFIG..."
