@@ -500,7 +500,7 @@ jobs:
            set -euo pipefail
            cd "android12-5.10-240"
            git clone https://github.com/fatalcoder524/map_spoof.git
-           cd "$android12-5.10-240/common"
+           cd "android12-5.10-240/common"
            patch -p1 --forward < "../../map_spoof/sus_kernel.diff"
            cp -r "../../map_spoof/map_spoof" drivers
            grep -q "map_spoof" drivers/Makefile || printf "\nobj-\$(CONFIG_MAP_SPOOF) += map_spoof/\n" >> drivers/Makefile && echo "[+] Modified Makefile."
