@@ -498,7 +498,7 @@ jobs:
         shell: bash
         run: |
            set -euo pipefail
-           cd "$CONFIG"
+           cd "android12-5.10-240"
            git clone https://github.com/fatalcoder524/map_spoof.git
            cd "$android12-5.10-240/common"
            patch -p1 --forward < "../../map_spoof/sus_kernel.diff"
