@@ -269,7 +269,12 @@ jobs:
             patch -p1 < fix_5.15.legacy.patch
           fi   
       
-      
+      - name: Apply ptrace patch for older kernels
+       # if: fromJSON(inputs.kernel_version) < 5.16
+        run: |
+          cd "$CONFIG/common"
+          patch -p1 -F 3 < "../../kernel_patches/gki_ptrace.patch"
+
       
       - name: 确定 KernelSU 的分支
         run: |
