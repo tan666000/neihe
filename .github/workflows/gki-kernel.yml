@@ -425,8 +425,7 @@ jobs:
             # 直接修改版本号
             if [ -f kernel/sulog.h ]; then
                 sed -i 's/KERNEL_VERSION(5, 10, 245)/KERNEL_VERSION(5, 10, 198)/' kernel/sulog.h
-    
-          fi
+            fi
       
       - name: 升级LZ4至1.10.0
        # if: ${{ inputs.use_zram }}
