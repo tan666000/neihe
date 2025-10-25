@@ -422,8 +422,10 @@ jobs:
             
             cp ../../kernel_patches/next/scope_min_manual_hooks_v1.5.patch ./
             patch -p1 -F 3 < scope_min_manual_hooks_v1.5.patch
-            cp ../../kernel_patches/next/qd.patch ./
-            patch -p1 -F 3 < qd.patch
+            # 直接修改版本号
+            if [ -f kernel/sulog.h ]; then
+                sed -i 's/KERNEL_VERSION(5, 10, 245)/KERNEL_VERSION(5, 10, 198)/' kernel/sulog.h
+    
           fi
       
       - name: 升级LZ4至1.10.0
