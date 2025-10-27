@@ -385,10 +385,6 @@ jobs:
             echo "Applying SUSFS patches for SukiSU..."
             cd ./KernelSU
             echo "Applying SukiSU specific SUSFS patch..."
-            # 完全移除版本判断，永远开启 sulog
-            sed -i '/#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 10, 245)/,/#endif/d' kernel/sulog.h && \
-            sed -i '/#include <linux\/version.h>/a\
-            #define __SULOG_GATE        1' kernel/sulog.h
           else
             echo "Invalid KernelSU variant selected!"
             exit 1
