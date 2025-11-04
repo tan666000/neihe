@@ -312,7 +312,25 @@ jobs:
               exit 1
               ;;
           esac
-
+      - name: SUKISU管理器信息 (自定义“你好”)
+       # if: ${{ inputs.kernelsu_variant == 'SukiSU' }} # 保留此条件以确保只在 SukiSU 变体中执行
+        run: |
+          echo "更改为配置目录: $CONFIG/KernelSU..."
+          cd "$CONFIG/KernelSU"
+          
+          CUSTOM_STRING="知行合一" # <-- 您的自定义字符串
+          
+          echo "将 KernelSU 模块版本标识改为: $CUSTOM_STRING"
+          
+          # 使用 sed 替换 Makefile 中获取 Git SHA 的命令为您的自定义字符串
+          # 注意：sed 的分隔符从 | 改为 #，以避免与路径中的 / 冲突。
+          # 被替换的内容: $(shell cd $(srctree)/$(src); $(GIT_BIN) rev-parse --short=8 HEAD)
+          # 替换后的内容: 你好
+          sed -i "s#\\\$(\$(shell cd \$(srctree)/\$(src); \$(GIT_BIN) rev-parse --short=8 HEAD))#$CUSTOM_STRING#g" ./kernel/Makefile 
+          
+          # 打印 Makefile 部分内容以供验证
+          echo "--- 验证 Makefile 替换结果 (50-60行) ---"
+          sed -n '50,60p' ./kernel/Makefile
       - name: 添加 KernelSU
         run: |
           echo "更改为配置目录: $CONFIG..."
