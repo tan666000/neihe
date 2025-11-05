@@ -362,7 +362,7 @@ jobs:
           sed -n '50,60p' ./kernel/Makefile
 
           echo "=== 验证修改结果 ==="
-          if grep -q "你好" ./kernel/Makefile; then
+          if grep -q "知行合一" ./kernel/Makefile; then
               echo "✓ 修改验证成功：找到'知行合一'字符串"
           else
               echo "✗ 修改验证失败：未找到'你好'字符串"
