@@ -476,8 +476,7 @@ jobs:
           elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
             echo "Applying hooks for SukiSU..."
             
-            cp ../../kernel_patches/next/scope_min_manual_hooks_v1.5.patch ./
-            patch -p1 -F 3 < scope_min_manual_hooks_v1.5.patch
+           # 
             # 直接修改版本号
            # if [ -f kernel/sulog.h ]; then
                 #sed -i 's/KERNEL_VERSION(5, 10, 245)/KERNEL_VERSION(5, 10, 198)/' kernel/sulog.h
