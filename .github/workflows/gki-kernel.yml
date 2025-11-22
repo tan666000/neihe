@@ -333,6 +333,7 @@ jobs:
           fi
       
       - name: SUKISU管理器信息 (自定义“你好”)
+        if: ${{ inputs.kernelsu_variant == 'SukiSU' }}
         run: |
           cd "$CONFIG"
           cd ./KernelSU
@@ -406,9 +407,9 @@ jobs:
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./ 
             patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
 
-            echo "Applying Official specific patches..."
-            cp ../../zzh_patch/mksu_core_hook.c.patch ./
-            patch -p1 --fuzz=3 < mksu_core_hook.c.patch
+            # echo "Applying Official specific patches..."
+            # cp ../../zzh_patch/mksu_core_hook.c.patch ./
+            # patch -p1 --fuzz=3 < mksu_core_hook.c.patch
 
           elif [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
             # 临时恢复KSU-NEXT的dev编译
@@ -419,7 +420,7 @@ jobs:
               cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
               patch -p1 < 10_enable_susfs_for_ksu.patch || true
               echo "应用临时修复补丁"
-              cp ../../kernel_patches/next/susfs_fix_patches/v1.5.12/* ./
+              cp ../../zzh_patch/next-patch/* ./
               patch -p1 < fix_apk_sign.c.patch
               patch -p1 < fix_core_hook.c.patch
               patch -p1 < fix_sucompat.c.patch
@@ -433,9 +434,9 @@ jobs:
             cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
             patch -p1 --forward < 10_enable_susfs_for_ksu.patch || true
 
-            echo "Applying MKSU specific patches..."
-            cp ../../zzh_patch/mksu_core_hook.c.patch ./
-            patch -p1 --fuzz=3 < mksu_core_hook.c.patch
+            # echo "Applying MKSU specific patches..."
+            # cp ../../zzh_patch/mksu_core_hook.c.patch ./
+            # patch -p1 --fuzz=3 < mksu_core_hook.c.patch
 
           elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
             echo "Applying SUSFS patches for SukiSU..."
@@ -451,10 +452,10 @@ jobs:
 
           patch -p1 --fuzz=3 < 50_add_susfs_in_gki-${{ inputs.android_version }}-${{ inputs.kernel_version }}.patch || true
 
-          if [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
-            cp ../../zzh_patch/rm_devpt.patch ./
-            patch -p1 < rm_devpt.patch
-          fi
+          # if [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
+          #   cp ../../zzh_patch/rm_devpt.patch ./
+          #   patch -p1 < rm_devpt.patch
+          # fi
 
           FORMATTED_BRANCH="${{ inputs.android_version }}-${{ inputs.kernel_version }}"
           if grep -q deprecated <<< "$REMOTE_BRANCH" && \
@@ -463,25 +464,41 @@ jobs:
             cp ../../zzh_patch/5.10-patch/fdinfo.c.patch ./
             patch -p1 < fdinfo.c.patch
           fi
-  
-      - name: 应用新的HOOKS补丁
+      - name: 一些修复补丁
         run: |
-          echo "更改为配置目录: $CONFIG..."
           cd "$CONFIG/common"
-
-          if [ "${{ inputs.kernelsu_variant }}" == "Next" ]; then
-            echo "Applying hooks for KernelSU-Next..."
-            cp ../../kernel_patches/next/scope_min_manual_hooks_v1.5.patch ./
-            patch -p1 -F 3 < scope_min_manual_hooks_v1.5.patch
-          elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
-            echo "Applying hooks for SukiSU..."
-            
-           # 
-            # 直接修改版本号
-           # if [ -f kernel/sulog.h ]; then
-                #sed -i 's/KERNEL_VERSION(5, 10, 245)/KERNEL_VERSION(5, 10, 198)/' kernel/sulog.h
-           # fi
+          FORMATTED_BRANCH="${{ inputs.android_version }}-${{ inputs.kernel_version }}"
+          # Fake Patch to fix failures
+          fake_patched=0
+          if [ "$FORMATTED_BRANCH" = "android15-6.6" ]; then
+            if ! grep -qxF $'\tunsigned int nr_subpages = __PAGE_SIZE / PAGE_SIZE;' ./fs/proc/task_mmu.c; then
+              echo "未找到 nr_subpages,正在进行补丁修复"
+              sed -i -e '/int ret = 0, copied = 0;/a \\tunsigned int nr_subpages \= __PAGE_SIZE \/ PAGE_SIZE;' -e '/int ret = 0, copied = 0;/a \\tpagemap_entry_t \*res = NULL;' ./fs/proc/task_mmu.c
+              fake_patched=1
+            fi
           fi
+          
+          if [ "$FORMATTED_BRANCH" = "android12-5.10" ] || [ "$FORMATTED_BRANCH" = "android13-5.10" ] || [ "$FORMATTED_BRANCH" = "android13-5.15" ]; then
+            if ! grep -qxF $'\tif (!vma_pages(vma))' ./fs/proc/task_mmu.c; then
+              echo "未找到 vma_pages,正在进行补丁修复"
+              fake_patched=1
+            fi
+          fi
+
+          if [ "$fake_patched" = 1 ]; then
+            if [ "$FORMATTED_BRANCH" = "android15-6.6" ]; then
+              if grep -qxF $'\tunsigned int nr_subpages = __PAGE_SIZE / PAGE_SIZE;' ./fs/proc/task_mmu.c; then
+                sed -i -e '/unsigned int nr_subpages \= __PAGE_SIZE \/ PAGE_SIZE;/d' -e '/pagemap_entry_t \*res = NULL;/d' ./fs/proc/task_mmu.c
+              fi
+            fi
+            
+            if [ "$FORMATTED_BRANCH" = "android12-5.10" ] || [ "$FORMATTED_BRANCH" = "android13-5.10" ] || [ "$FORMATTED_BRANCH" = "android13-5.15" ]; then
+              if grep -qxF $'\t\tgoto show_pad;' ./fs/proc/task_mmu.c; then
+                sed -i -e 's/goto show_pad;/return 0;/' ./fs/proc/task_mmu.c
+              fi
+            fi
+          fi
+      
       
       - name: 升级LZ4至1.10.0
        # if: ${{ inputs.use_zram }}
