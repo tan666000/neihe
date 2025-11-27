@@ -500,8 +500,8 @@ jobs:
           fi
       
       
-      - name: 升级LZ4至1.10.0
-       # if: ${{ inputs.use_zram }}
+      - name: 升级LZ4至1.10.0 并修复宏冲突
+        #if: ${{ inputs.use_zram }}
         run: |
 
           echo "更改为配置目录: $CONFIG..."
@@ -524,19 +524,43 @@ jobs:
               fi
           done
 
+          # 复制新的 LZ4 文件和补丁
           cp -r ../../zzh_patch/zram/lz4/* ./lib/lz4/
           cp -r ../../zzh_patch/zram/include/linux/* ./include/linux/
           cp -r ../../zzh_patch/zram/${{ inputs.kernel_version }}/lz4_1.10.0.patch ./
 
+          # 应用 LZ4 补丁
           patch -p1 -F 3 --fuzz=5 < lz4_1.10.0.patch || true
+
+          echo '开始修复 LZ4 宏定义冲突...'
+          LZ4_HC_FILE="lib/lz4/lz4hc.c"
+
+          # ----------------------------------------------------
+          # 添加修复宏定义冲突的步骤 (使用 sed 替换为 #ifndef 块)
+          # ----------------------------------------------------
+          if [ -f "$LZ4_HC_FILE" ]; then
+              # 使用 sed 查找并替换 MIN 宏，在其前面添加 #ifndef MIN
+              sed -i 's/^#define MIN(a, b) ((a) < (b) ? (a) : (b))/#ifndef MIN\n#define MIN(a, b) ((a) < (b) ? (a) : (b))\n#endif \/\/ MIN/' "$LZ4_HC_FILE"
+              
+              # 使用 sed 查找并替换 MAX 宏，在其前面添加 #ifndef MAX
+              sed -i 's/^#define MAX(a, b) ((a) > (b) ? (a) : (b))/#ifndef MAX\n#define MAX(a, b) ((a) > (b) ? (a) : (b))\n#endif \/\/ MAX/' "$LZ4_HC_FILE"
+              
+              echo "$LZ4_HC_FILE 中的 MIN/MAX 宏定义已使用 #ifndef 修复。"
+          else
+              echo "警告: $LZ4_HC_FILE 不存在，跳过宏定义修复。"
+          fi
+          # ----------------------------------------------------
 
           # 检查文件是否存在
           if [ -f "fs/f2fs/Makefile" ]; then
-              # 检查是否包含指定行
+              # 检查是否包含指定行 (修复点：添加反斜杠转义)
               if ! grep -qF "f2fs-\$(CONFIG_F2FS_IOSTAT) += iostat.o" "fs/f2fs/Makefile"; then
+                  # 修复点：添加反斜杠转义
                   echo "f2fs-\$(CONFIG_F2FS_IOSTAT) += iostat.o" >> "fs/f2fs/Makefile"
+                  # 修复点：添加反斜杠转义
                   echo "已添加: f2fs-\$(CONFIG_F2FS_IOSTAT) += iostat.o"
               else
+                  # 修复点：添加反斜杠转义
                   echo "文件已经包含: f2fs-\$(CONFIG_F2FS_IOSTAT) += iostat.o"
               fi
           else
