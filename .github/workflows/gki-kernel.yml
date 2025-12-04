@@ -332,47 +332,7 @@ jobs:
             curl -LSs "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/main/kernel/setup.sh" | bash $BRANCH
           fi
       
-      - name: SUKISU管理器信息 (自定义“你好”)
-        if: ${{ inputs.kernelsu_variant == 'SukiSU' }}
-        run: |
-          cd "$CONFIG"
-          cd ./KernelSU
-          
-          # 获取当前 Git 提交的短哈希
-          GIT_COMMIT_HASH=$(git rev-parse --short=8 HEAD)
-          echo "当前提交哈希: $GIT_COMMIT_HASH"
-          
-          # 获取 KernelSU API 版本号（最多重试3次）
-          for i in {1..3}; do
-            KSU_API_VERSION=$(curl -s "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU-Ultra/susfs-main/kernel/Makefile" | 
-              grep -m1 "KSU_VERSION_API :=" | 
-              awk -F'[:=[:space:]]+' '{print $3}' | 
-              tr -d '[:space:]')
-            [ -n "$KSU_API_VERSION" ] && break || sleep 1
-          done
-          [ -z "$KSU_API_VERSION" ] && KSU_API_VERSION="4.0.0"
-          
-          echo "KSU_API_VERSION=$KSU_API_VERSION" >> $GITHUB_ENV
-          
-          # 构建版本定义
-          VERSION_DEFINITIONS=$(printf 'define get_ksu_version_full\nv\\$1-%s@知行合一\nendef\n\nKSU_VERSION_API := %s\nKSU_VERSION_FULL := v%s-%s@知行合一' \
-            "$GIT_COMMIT_HASH" "$KSU_API_VERSION" "$KSU_API_VERSION" "$GIT_COMMIT_HASH")
-          
-          # 清理旧版本定义
-          sed -i '/define get_ksu_version_full/,/endef/d; /KSU_VERSION_API :=/d; /KSU_VERSION_FULL :=/d' kernel/Makefile
-          
-          # 插入新版本定义（在文件开头）
-          awk -v def="$VERSION_DEFINITIONS" 'BEGIN {print def} 1' kernel/Makefile > kernel/Makefile.tmp && 
-            mv kernel/Makefile.tmp kernel/Makefile
-          
-          # 生成自定义版本号
-          KSU_VERSION=$(expr $(git rev-list --count main) + 10700 2>/dev/null || echo 114514)
-          echo "KSUVER=$KSU_VERSION" >> $GITHUB_ENV
-          echo "ksuver=$KSU_VERSION" >> $GITHUB_OUTPUT
-          
-          # 验证修改
-          grep -A5 "define get_ksu_version_full" kernel/Makefile
-          grep "KSU_VERSION_FULL" kernel/Makefile
+    
       - name: 为 KernelSU 变体安装 SUSFS 补丁
         run: |
           echo "更改为配置目录: $CONFIG..."
