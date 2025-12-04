@@ -350,7 +350,7 @@ jobs:
               tr -d '[:space:]')
             [ -n "$KSU_API_VERSION" ] && break || sleep 1
           done
-          [ -z "$KSU_API_VERSION" ] && KSU_API_VERSION="3.1.7"
+          [ -z "$KSU_API_VERSION" ] && KSU_API_VERSION="4.0.0"
           
           echo "KSU_API_VERSION=$KSU_API_VERSION" >> $GITHUB_ENV
           
