@@ -721,8 +721,9 @@ jobs:
       
       - name: 添加hymo模块
         run: |
+          cd "$CONFIG"
         #!/bin/bash
-        
+         
         # 尝试下载并应用HYMO补丁
         PATCH_URL="https://raw.githubusercontent.com/Anatdx/hymo/master/patch/hymofs.patch" # <-- 修正后的行
         
