@@ -725,8 +725,7 @@ jobs:
         run: |
           cd "$CONFIG"
           curl -LO https://raw.githubusercontent.com/Anatdx/hymo/refs/heads/master/patch/hymofs.patch
-          
-          patch -p1 -F 3 < ../hymofs.patch || true
+          patch -p1 -F 3 < ./hymofs.patch || true  # 改为当前目录
           echo "CONFIG_HYMOFS=y" >> ./arch/arm64/configs/gki_defconfig
       - name: 配置内核构时间/删除dirty字符
         run: |
