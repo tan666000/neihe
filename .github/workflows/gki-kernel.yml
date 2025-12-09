@@ -719,32 +719,8 @@ jobs:
           # 用于debug config
           tail -n 40 ./common/arch/arm64/configs/gki_defconfig
       
-      - name: 添加 hymo 模块
-        run: |
-         echo "--- 正在进入目录并下载 HymoFS 补丁 ---"
-         cd "$CONFIG"
-         
-         # 1. 下载补丁并检查
-         if ! wget https://raw.githubusercontent.com/Anatdx/hymo/refs/heads/master/patch/hymofs.patch; then
-           echo "❌ 错误: hymofs.patch 下载失败！请检查 URL。"
-           exit 1
-         fi
-         echo "✅ hymofs.patch 下载成功。"
-         
-         # 2. 应用补丁并检查
-         echo "正在应用补丁..."
-         if ! patch -p0 -F 3 < hymofs.patch; then
-           echo "⚠️ 警告: 补丁应用失败，请检查代码兼容性，但继续写入配置。"
-         else
-           echo "✅ 补丁应用成功。"
-         fi
-         
-         # 清理下载的补丁文件
-         rm -f hymofs.patch
-         
-         # 3. 写入 defconfig 配置项
-         echo "CONFIG_HYMOFS=y" >> ./common/arch/arm64/configs/gki_defconfig
-         echo "✅ 已成功写入配置项 CONFIG_HYMOFS=y。"
+      
+      
       - name: 配置内核构时间/删除dirty字符
         run: |
           echo "更改为配置目录: $CONFIG..."
