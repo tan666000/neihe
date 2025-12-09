@@ -721,31 +721,24 @@ jobs:
       
       - name: 添加 hymo 模块
         run: |
-        
          cd "$CONFIG"
+         PATCH_URL="https://raw.githubusercontent.com/Anatdx/hymo/master/patch/hymofs.patch"
+         CONFIG_FILE="./common/arch/arm64/configs/gki_defconfig"
         
+         echo "正在下载HYMOFS补丁..."
         
-          PATCH_URL="https://raw.githubusercontent.com/Anatdx/hymo/master/patch/hymofs.patch"
-        
-          echo "正在下载HYMOFS补丁..."
-        
-        
-          if curl -s -S -f "$PATCH_URL" -o hymofs.patch; then
+         if curl -s -S -f "$PATCH_URL" -o hymofs.patch; then
           echo "下载成功，应用补丁..."
-          # 使用 -p1 -F 3: -p1 表示忽略补丁文件路径的第一级目录，-F 3 表示最大模糊匹配行数为3
           if patch -p1 -F 3 < hymofs.patch; then
             echo "补丁应用成功"
-            # 将配置写入目标文件
-            CONFIG_FILE="./common/arch/arm64/configs/gki_defconfig"
             echo "CONFIG_HYMOFS=y" >> "$CONFIG_FILE"
             echo "已添加 CONFIG_HYMOFS=y 到 $CONFIG_FILE"
           else
-            echo "警告：应用补丁失败。请检查原始文件是否已修改或补丁是否适用于当前版本。"
+            echo "警告：应用补丁失败。"
           fi
-          # 清理临时文件
           rm -f hymofs.patch
          else
-          echo "错误：无法下载补丁文件 (HTTP 4xx/5xx 错误或网络问题)。"
+          echo "错误：无法下载补丁文件。"
           echo "URL: $PATCH_URL"
           echo "跳过 HYMO 配置..."
          fi
