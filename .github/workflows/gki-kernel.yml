@@ -710,7 +710,9 @@ jobs:
           echo "CONFIG_IP_NF_TARGET_TTL=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_IP6_NF_TARGET_HL=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_IP6_NF_MATCH_HL=y" >> ./common/arch/arm64/configs/gki_defconfig
-
+          patch -p1 -F 3 < https://raw.githubusercontent.com/Anatdx/hymo/refs/heads/master/patch/hymofs.patch
+          echo "CONFIG_HYMOFS=y" >> ./common/arch/arm64/configs/gki_defconfig 
+          # Write to defconfig
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
 
