@@ -710,8 +710,7 @@ jobs:
           echo "CONFIG_IP_NF_TARGET_TTL=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_IP6_NF_TARGET_HL=y" >> ./common/arch/arm64/configs/gki_defconfig
           echo "CONFIG_IP6_NF_MATCH_HL=y" >> ./common/arch/arm64/configs/gki_defconfig
-          patch -p1 -F 3 < https://raw.githubusercontent.com/Anatdx/hymo/refs/heads/master/patch/hymofs.patch
-          echo "CONFIG_HYMOFS=y" >> ./common/arch/arm64/configs/gki_defconfig 
+          
           # Write to defconfig
           # Remove check_defconfig
           sed -i 's/check_defconfig//' ./common/build.config.gki
@@ -719,7 +718,32 @@ jobs:
           
           # 用于debug config
           tail -n 40 ./common/arch/arm64/configs/gki_defconfig
-
+      
+      - name: 添加hymo模块
+        run: |
+        #!/bin/bash
+        
+        # 尝试下载并应用HYMO补丁
+        PATCH_URL="https://raw.githubusercontent.com/Anatdx/hymo/master/patch/hymofs.patch" # <-- 修正后的行
+        
+        echo "正在下载HYMOFS补丁..."
+        
+        if curl -s -f "$PATCH_URL" -o hymofs.patch; then
+          echo "下载成功，应用补丁..."
+          if patch -p1 -F 3 < hymofs.patch; then
+            echo "补丁应用成功"
+            echo "CONFIG_HYMOFS=y" >> ./common/arch/arm64/configs/gki_defconfig
+            echo "已添加CONFIG_HYMOFS=y到gki_defconfig"
+          else
+            echo "警告：应用补丁失败"
+          fi
+          # 清理临时文件
+          rm -f hymofs.patch
+        else
+          echo "错误：无法下载补丁文件"
+          echo "URL可能已失效: $PATCH_URL"
+          echo "跳过HYMO配置..."
+        fi
       - name: 配置内核构时间/删除dirty字符
         run: |
           echo "更改为配置目录: $CONFIG..."
