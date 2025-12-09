@@ -733,7 +733,7 @@ jobs:
          
          # 2. 应用补丁并检查
          echo "正在应用补丁..."
-         if ! patch -p1 -F 3 < hymofs.patch; then
+         if ! patch -p0 -F 3 < hymofs.patch; then
            echo "⚠️ 警告: 补丁应用失败，请检查代码兼容性，但继续写入配置。"
          else
            echo "✅ 补丁应用成功。"
