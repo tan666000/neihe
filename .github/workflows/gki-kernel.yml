@@ -657,6 +657,9 @@ jobs:
           elif [ "${{ inputs.kernelsu_variant }}" == "SukiSU" ]; then
             echo "CONFIG_KPM=n" >> ./common/arch/arm64/configs/gki_defconfig
             echo "CONFIG_KSU_SUSFS_SUS_SU=n" >> ./common/arch/arm64/configs/gki_defconfig
+            wget https://raw.githubusercontent.com/Anatdx/HymoFS/refs/heads/main/patch/dirtyhymofs.patch
+            patch -p1 -F 3 < dirtyhymofs.patch
+            echo "CONFIG_HYMOFS=y" >> ./common/arch/arm64/configs/gki_defconfig
           
           fi
           
