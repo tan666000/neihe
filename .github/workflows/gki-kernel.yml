@@ -424,7 +424,7 @@ jobs:
               cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
               patch -p1 < 10_enable_susfs_for_ksu.patch || true
               echo "应用临时修复补丁"
-              cp "../next/susfs_fix_patches/v2.0.0/"*.patch ./
+              cp "../../kernel_patches/next/susfs_fix_patches/v2.0.0/"*.patch ./
             echo "Applying Makefile.patch"
             patch -p1 < Makefile.patch
             echo "Applying allowlist.c.patch"
