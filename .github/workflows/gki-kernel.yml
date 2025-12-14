@@ -457,7 +457,6 @@ jobs:
             return 0;
             ' kernel/setuid_hook.c
             sed -i 's/ksu_get_manager_appid/ksu_get_manager_uid/g' kernel/manager.h
-            ;;
             fi
             
           elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
