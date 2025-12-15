@@ -422,10 +422,8 @@ jobs:
             if [ "$BRANCH" == "-s next" ]; then
               echo "当前为Dev分支的KernelSU-Next"
               cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
-              patch -p1 < 10_enable_susfs_for_ksu.patch || true
-              echo "应用临时修复补丁"
-              cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
               patch -f -p1 --fuzz=3 --ignore-whitespace < 10_enable_susfs_for_ksu.patch || true
+              
               
               cp ../../zzh_patch/next-patch/* ./
               patch -p1 < fix_apk_sign.c.patch
