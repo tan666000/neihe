@@ -424,25 +424,19 @@ jobs:
               cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
               patch -p1 < 10_enable_susfs_for_ksu.patch || true
               echo "应用临时修复补丁"
-              cp "../../kernel_patches/next/susfs_fix_patches/v2.0.0/"*.patch ./
-              echo "Applying allowlist.c.patch"
-            patch -p1 < allowlist.c.patch
-            echo "Applying apk_sign.c.patch"
-            patch -p1 < apk_sign.c.patch
-            echo "Applying kernel_umount.c.patch"
-            patch -p1 < kernel_umount.c.patch
-            echo "Applying ksu.c.patch"
-            patch -p1 < ksu.c.patch
-            echo "Applying ksud.c.patch"
-            patch -p1 < ksud.c.patch
-            echo "Applying Makefile.patch"
-            patch -p1 < Makefile.patch
-            echo "Applying selinux.c.patch"
-            patch -p1 < selinux.c.patch
-            echo "Applying sucompat.c.patch"
-            patch -p1 < sucompat.c.patch
-            echo "Applying supercalls.c.patch"
-            patch -p1 < supercalls.c.patch
+              cp ../../susfs4ksu/kernel_patches/KernelSU/10_enable_susfs_for_ksu.patch ./
+              patch -f -p1 --fuzz=3 --ignore-whitespace < 10_enable_susfs_for_ksu.patch || true
+              
+              cp ../../zzh_patch/next-patch/* ./
+              patch -p1 < fix_apk_sign.c.patch
+              patch -p1 < fix_supercalls.c.patch
+              patch -p1 < fix_Makefile.patch
+              patch -p1 < fix_app_profile.c.patch
+              patch -p1 < fix_app_profile.h.patch
+              patch -p1 < fix_selinux.h.patch
+              patch -p1 < fix_setuid_hook.c.patch
+
+              sed -i '8d' kernel/selinux/selinux.c
             fi
             
           elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
