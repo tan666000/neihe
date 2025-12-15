@@ -434,7 +434,7 @@ jobs:
               patch -p1 < fix_selinux.h.patch
               patch -p1 < fix_setuid_hook.c.patch
 
-              sed -i '8d' kernel/selinux/selinux.c
+              # sed -i '8d' kernel/selinux/selinux.c
             fi
             
           elif [ "${{ inputs.kernelsu_variant }}" == "MKSU" ]; then
